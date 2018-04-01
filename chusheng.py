@@ -50,17 +50,16 @@ def bruteforce(salt,target):
         characters.append(chr(c))
 
     characters = list(['a','1','b','2'])
-
-    lbl_answer['text'] = ''
     upper = 4
-    print('the label cget is %s fdsa' % lbl_answer.cget("text"))
     for x in range(0,upper + 1):
-        lbl_status['text'] = 'Processing length of %s' % x
-        if lbl_answer.cget("text") != '':
-            print('test string 1')
+        lbl_status.configure(text = 'Processing length of %s' % x)
+        lbl_status.update()
+        if lbl_answer.cget("text") == '':
+            actually(characters, salt, target, list(), x, 0)
+        
         print('the label cget is %s fdsa' % lbl_answer.cget("text"))
         print(lbl_answer['text'])
-        actually(characters, salt, target, list(), x, 0)
+        
     
 def dictionary():
     '''
@@ -106,19 +105,30 @@ chk_special = Checkbutton(root,
     var = chk_special_v)
 chk_special.grid(row = 1, column = 1)
 
-lbl_status = Label(root, text='')
-lbl_status.grid(row = 2, column = 0, columnspan = 2)
+lbl_depth = Label(root, text = 'Maximum Password Length')
+lbl_depth.grid(row = 2, column = 0, columnspan = 2)
 
-lbl_answer = Label(root, text='')
-lbl_answer.grid(row = 3, column = 0, columnspan = 2)
+scl_depth_v = IntVar(value = 4)
+scl_depth = Scale(root, from_ = 1, to = 32,
+    length = 256,
+    orient = HORIZONTAL,
+    showvalue = 1,
+    var = scl_depth_v)
+scl_depth.grid(row = 3, column = 0, columnspan = 2)
 
 lbl_hash = Label(root, text='Enter the hash')
-lbl_hash.grid(row = 3, column = 0, columnspan = 2)
+lbl_hash.grid(row = 4, column = 0, columnspan = 2)
 
 ent_hash = Entry(root, justify = 'center', width = 36)
 ent_hash.grid(row = 5, column = 0, columnspan = 2)
 
 btn_crack = Button(root, text="Crack", command=crack)
-btn_crack.grid(row = 6, column = 0, columnspan = 2)
+btn_crack.grid(row = 7, column = 0, columnspan = 2)
+
+lbl_status = Label(root, text='')
+lbl_status.grid(row = 9, column = 0, columnspan = 2)
+
+lbl_answer = Label(root, text='')
+lbl_answer.grid(row = 10, column = 0, columnspan = 2)
 
 root.mainloop()
