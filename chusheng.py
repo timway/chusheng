@@ -10,6 +10,9 @@ from tkinter import *
 # Linux with OpenSSL Method
 #   [user@wk1 chusheng]$ openssl passwd -1 -salt 'jBjw' -1 'a1b2'
 #   $1$jBjw$l492gWppPZ5ldgkTMr3YB.
+#
+# Invalid HASH for testing
+#   $1$jBjw$l492gWppPZ5ldgkTMr3YC.
 
 def byfire(salt, target, guess):
     a = md5_crypt.using( salt = salt, salt_size = 4).hash(''.join(guess))
@@ -30,8 +33,8 @@ def actually(characters, salt, target, s, i, p):
             else:
                 s[z] = characters[0]
     else:
-        lbl_answer.configure(text = ''.join(s))
-        lbl_answer.update()
+        ent_answer.delete(0, END)
+        ent_answer.insert(0, ''.join(s))
         return True
 
     return False
@@ -42,31 +45,36 @@ def bruteforce(salt,target):
     '''
     
     characters = []
-    for c in range(ord('0'),ord('9') + 1):
-        characters.append(chr(c))
-    for c in range(ord('A'),ord('Z') + 1):
-        characters.append(chr(c))
-    for c in range(ord('a'),ord('z') + 1):
-        characters.append(chr(c))
 
-    characters = list(['a','1','b','2'])
-    upper = 4
-    for x in range(0,upper + 1):
-        lbl_status.configure(text = 'Processing length of %s' % x)
-        lbl_status.update()
-        if lbl_answer.cget("text") == '':
+    if chk_numeral_v.get() == 1:
+        for c in range(ord('0'),ord('9') + 1):
+            characters.append(chr(c))
+    if chk_upper_v.get() == 1:
+        for c in range(ord('A'),ord('Z') + 1):
+            characters.append(chr(c))
+    if chk_lower_v.get() == 1:
+        for c in range(ord('a'),ord('z') + 1):
+            characters.append(chr(c))
+
+    characters.append(list([
+        '!','@','#','$','%','^','&','*','(',')','-','_','=','+']))
+    
+    # characters = list(['a','1','b','2'])
+    
+    for x in range(0,scl_depth.get() + 1):
+        if ent_answer.get() == '':
+            lbl_status.configure(text = 'Processing length of %s' % x)
+            lbl_status.update()
             actually(characters, salt, target, list(), x, 0)
-        
-        print('the label cget is %s fdsa' % lbl_answer.cget("text"))
-        print(lbl_answer['text'])
-        
     
 def dictionary():
     '''
     '''
 
 def crack():
-    print(ent_hash.get().strip().split("$"))
+    '''
+    '''
+    
     a = ent_hash.get().strip().split("$")
     
     if len(a) == 4:
@@ -78,8 +86,6 @@ def crack():
 
 root = Tk()
 root.title('chusheng')
-
-hash = ''
 
 chk_lower_v = IntVar(value = 1)
 chk_lower = Checkbutton(root,
@@ -108,7 +114,7 @@ chk_special.grid(row = 1, column = 1)
 lbl_depth = Label(root, text = 'Maximum Password Length')
 lbl_depth.grid(row = 2, column = 0, columnspan = 2)
 
-scl_depth_v = IntVar(value = 4)
+scl_depth_v = IntVar(value = 12)
 scl_depth = Scale(root, from_ = 1, to = 32,
     length = 256,
     orient = HORIZONTAL,
@@ -122,13 +128,16 @@ lbl_hash.grid(row = 4, column = 0, columnspan = 2)
 ent_hash = Entry(root, justify = 'center', width = 36)
 ent_hash.grid(row = 5, column = 0, columnspan = 2)
 
+ent_hash.delete(0, END)
+ent_hash.insert(0, '$1$jBjw$l492gWppPZ5ldgkTMr3YB.')
+
 btn_crack = Button(root, text="Crack", command=crack)
-btn_crack.grid(row = 7, column = 0, columnspan = 2)
+btn_crack.grid(row = 7, column = 0, columnspan = 2, pady = (8,8))
 
 lbl_status = Label(root, text='')
-lbl_status.grid(row = 9, column = 0, columnspan = 2)
+lbl_status.grid(row = 9, column = 0, columnspan = 2, pady = (8,8))
 
-lbl_answer = Label(root, text='')
-lbl_answer.grid(row = 10, column = 0, columnspan = 2)
+ent_answer = Entry(root, justify = 'center', width = 36)
+ent_answer.grid(row = 10, column = 0, columnspan = 2, pady = (8,8))
 
 root.mainloop()
