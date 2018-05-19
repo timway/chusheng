@@ -1,3 +1,4 @@
+from itertools import product
 from passlib.hash import md5_crypt
 from tkinter import *
 
@@ -15,7 +16,7 @@ from tkinter import *
 #   $1$jBjw$l492gWppPZ5ldgkTMr3YC.
 
 def byfire(salt, target, guess):
-    a = md5_crypt.using( salt = salt, salt_size = 4).hash(''.join(guess))
+    a = md5_crypt.using(salt = salt, salt_size = 4).hash(''.join(guess))
     if target == a.strip().split('$')[3]:
         return True
     else:
@@ -33,11 +34,63 @@ def actually(characters, salt, target, s, i, p):
             else:
                 s[z] = characters[0]
     else:
-        ent_answer.delete(0, END)
-        ent_answer.insert(0, ''.join(s))
+
         return True
 
     return False
+
+def generate(characters, constraint, l, w, p):
+    '''
+    characters : a list() containing elements of a length of 1 to be used to construct words out of
+    constraint : an int() representing the length of the words
+    l : a list() containing all of the generated words
+    w : the base word to kick off the instantiated iteration
+    i : 
+    p : the position we're iterating on
+    '''
+
+    if len(w) < constraint - 1:
+        w = w + characters[0]
+        l = generate(characters, constraint, l, w, p)
+    #elif p < constraint and w[p] != characters[len(characters) - 1]:
+    #    w[p] = characters[ characters.index(w[p]) + 1 ]
+    #    l = generate(characters, constraint, l , w, p + 1)
+
+    l.append(w)
+    print(l)
+    return l
+    
+    '''
+    # generate(characters, s, i, p)
+
+    w = str()
+
+    if len(l) > 0:
+        w = l[len(l) - 1]
+        if w[p] != characters[len(characters) - 1]:
+            w[p] = characters[characters.index(w[p]) + 1]
+    else: # generate the first word
+        for z in range(0, constraint):
+            w = w + characters[0]
+        l.append(w)
+        
+    if len(s) < i:
+        s.append(characters[0])
+        
+    if len(s) == i:
+        s[z] !=
+        
+        for z in reversed(range(p, len(s))):
+            if s[z] != characters[len(characters) - 1]:
+                s[z] = characters[characters.index(s[z]) + 1]
+                generate(characters, s, i , z)
+            else:
+                s[z] = characters[0]
+    else:
+        return s
+
+    return s
+    '''
 
 def bruteforce(salt,target):
     '''
@@ -45,28 +98,43 @@ def bruteforce(salt,target):
     '''
     
     characters = []
+    generated = list()
 
     if chk_numeral_v.get() == 1:
         for c in range(ord('0'),ord('9') + 1):
             characters.append(chr(c))
-    if chk_upper_v.get() == 1:
-        for c in range(ord('A'),ord('Z') + 1):
-            characters.append(chr(c))
+
+    if chk_special_v.get() == 1:
+        for c in [ '!','@','#','$','%','^','&','*','(',')','-','_','=','+' ]:
+            characters.append(c)
+    
     if chk_lower_v.get() == 1:
         for c in range(ord('a'),ord('z') + 1):
             characters.append(chr(c))
 
-    characters.append(list([
-        '!','@','#','$','%','^','&','*','(',')','-','_','=','+']))
+    if chk_upper_v.get() == 1:
+        for c in range(ord('A'),ord('Z') + 1):
+            characters.append(chr(c))
     
-    # characters = list(['a','1','b','2'])
-    
-    for x in range(0,scl_depth.get() + 1):
+    '''
+    words : a list of all of the words for the current depth to be operated on
+    '''
+    for x in range(1,scl_depth.get() + 1):
         if ent_answer.get() == '':
-            lbl_status.configure(text = 'Processing length of %s' % x)
-            lbl_status.update()
-            actually(characters, salt, target, list(), x, 0)
-    
+            words = list()
+            iteration = 0
+            for word in product(characters, repeat = x):
+                iteration = iteration + 1
+                if iteration % 2000 == 0:
+                    lbl_status.configure(text = 'Processing length of %s at %s' % (x,''.join(word)))
+                    lbl_status.update()
+                if byfire(salt, target, word):
+                    lbl_status.configure(text = 'Complete!')
+                    lbl_status.update()
+                    ent_answer.delete(0, END)
+                    ent_answer.insert(0, ''.join(word))
+                    break
+
 def dictionary():
     '''
     '''
@@ -74,13 +142,10 @@ def dictionary():
 def crack():
     '''
     '''
-    
     a = ent_hash.get().strip().split("$")
     
     if len(a) == 4:
-        salt = a[2]
-        target = a[3]
-        bruteforce(salt,target)
+        bruteforce(a[2],a[3])
     else:
         print('Incorrectly inputted hash.')
 
